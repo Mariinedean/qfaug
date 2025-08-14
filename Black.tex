@@ -1,0 +1,324 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{mathtools}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{framed}
+
+% Custom colorslack
+\definecolor{theoremblue}{RGB}{0,102,204}
+\definecolor{examplegreen}{RGB}{0,128,0}
+\definecolor{remarkred}{RGB}{204,0,0}
+
+% Theorem environments
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+
+% Simple colored boxes using framed
+\newenvironment{keybox}[1][Key Result]
+{\begin{leftbar}\noindent\textbf{\color{theoremblue}#1}\par\vspace{0.5em}}
+{\end{leftbar}}
+
+\newenvironment{remarkbox}[1][Remark]
+{\begin{leftbar}\noindent\textbf{\color{remarkred}#1}\par\vspace{0.5em}}
+{\end{leftbar}}
+
+\newenvironment{examplebox}[1][Example]
+{\begin{leftbar}\noindent\textbf{\color{examplegreen}#1}\par\vspace{0.5em}}
+{\end{leftbar}}
+
+% Header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Feynman-Kac \& Black-Scholes}
+\lhead{\leftmark}
+\cfoot{\thepage}
+
+% Title formatting
+\titleformat{\section}{\Large\bfseries\color{theoremblue}}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries\color{theoremblue}}{\thesubsection}{1em}{}
+
+\title{\textbf{\Large The Feynman-Kac Theorem and\\Black-Scholes Formula Derivation}}
+\author{Dean Palermo}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This document provides a comprehensive derivation of the Black-Scholes formula using the Feynman-Kac theorem. We begin with the fundamental partial differential equation (PDE) governing option pricing and demonstrate how stochastic calculus transforms this into a probabilistic expectation. The derivation culminates in the famous Black-Scholes formula for European call options.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{The Black-Scholes Partial Differential Equation}
+
+The Black-Scholes equation for the price $f(t,S)$ of a derivative security is given by:
+
+\begin{keybox}[The Black-Scholes PDE]
+\begin{equation}
+\frac{\partial f}{\partial t} + \frac{1}{2}\sigma^2 S^2 \frac{\partial^2 f}{\partial S^2} + rS \frac{\partial f}{\partial S} - rf = 0
+\end{equation}
+with boundary condition: $f(T,S) = \Phi(S)$ (payoff function)
+\end{keybox}
+
+where:
+\begin{itemize}
+    \item $S$ is the stock price
+    \item $t$ is time
+    \item $r$ is the risk-free interest rate
+    \item $\sigma$ is the volatility
+    \item $T$ is the maturity time
+    \item $\Phi(S)$ is the payoff function at maturity
+\end{itemize}
+
+\section{The Feynman-Kac Theorem}
+
+The Feynman-Kac theorem provides a stochastic representation for solutions to certain parabolic PDEs.
+
+\begin{theorem}[Feynman-Kac Theorem]
+Consider the PDE:
+\begin{equation}
+\frac{\partial v}{\partial t} + \frac{1}{2}a^2(x) \frac{\partial^2 v}{\partial x^2} + b(x) \frac{\partial v}{\partial x} - rv = 0
+\end{equation}
+with terminal condition $v(T,x) = g(x)$.
+
+If $X_t$ satisfies the SDE:
+\begin{equation}
+dX_s = b(X_s)ds + a(X_s)dW_s
+\end{equation}
+
+Then the solution is:
+\begin{equation}
+v(t,x) = \mathbb{E}\left[e^{-r(T-t)}g(X_T) \mid X_t = x\right]
+\end{equation}
+\end{theorem}
+
+\subsection{Intuitive Understanding}
+
+\begin{examplebox}[Physical Interpretation]
+Think of $v(t,x)$ as representing a particle starting at position $x$ at time $t$:
+\begin{enumerate}
+    \item The particle evolves according to the stochastic process $dX_s = b\,ds + a\,dW_s$
+    \item At time $T$, apply function $g$ to get $g(X_T)$
+    \item Discount back to present value: $e^{-r(T-t)}g(X_T)$
+    \item Take expectation: this gives us $v(t,x)$
+\end{enumerate}
+\end{examplebox}
+
+\begin{remarkbox}[What does "discount back" mean?]
+The factor $e^{-r(T-t)}$ is the continuous compounding discount factor. If you're promised $g(X_T)$ dollars at time $T$, its present value at time $t$ is $e^{-r(T-t)}g(X_T)$.
+\end{remarkbox}
+
+\section{Deriving the Feynman-Kac Formula}
+
+\subsection{Setting up the Martingale Property}
+
+From the definition of $v(t,x)$, we have:
+\begin{equation}
+v(t,x) = \mathbb{E}\left[e^{-r \cdot dt} \cdot v(t+dt, X_{t+dt}) \mid X_t = x\right]
+\end{equation}
+
+Using the approximation $e^{-r \cdot dt} \approx 1 - r \cdot dt$ for small $dt$:
+\begin{equation}
+v(t,x) = \mathbb{E}[(1 - r \cdot dt)(v(t,x) + dv)]
+\end{equation}
+
+\subsection{Applying Itô's Formula}
+
+For the process $X_t$ satisfying $dX = b\,dt + a\,dW$, Itô's formula gives:
+\begin{align}
+dv &= \frac{\partial v}{\partial t}dt + \frac{\partial v}{\partial x}dX + \frac{1}{2}\frac{\partial^2 v}{\partial x^2}(dX)^2\\
+&= \left[\frac{\partial v}{\partial t} + b\frac{\partial v}{\partial x} + \frac{1}{2}a^2\frac{\partial^2 v}{\partial x^2}\right]dt + a\frac{\partial v}{\partial x}dW
+\end{align}
+
+Taking expectations (noting $\mathbb{E}[dW] = 0$):
+\begin{equation}
+\mathbb{E}[dv] = \left[\frac{\partial v}{\partial t} + b\frac{\partial v}{\partial x} + \frac{1}{2}a^2\frac{\partial^2 v}{\partial x^2}\right]dt
+\end{equation}
+
+\subsection{Deriving the PDE}
+
+From the martingale property and ignoring higher-order terms:
+\begin{equation}
+0 = \mathbb{E}[dv] - r \cdot dt \cdot v(t,x)
+\end{equation}
+
+Substituting and dividing by $dt$:
+\begin{keybox}[The Feynman-Kac PDE]
+\begin{equation}
+\frac{\partial v}{\partial t} + \frac{1}{2}a^2\frac{\partial^2 v}{\partial x^2} + b\frac{\partial v}{\partial x} - rv = 0
+\end{equation}
+\end{keybox}
+
+\section{Application to Black-Scholes}
+
+\subsection{Matching the Pattern}
+
+For the Black-Scholes equation:
+\begin{equation}
+\frac{\partial f}{\partial t} + \frac{1}{2}\sigma^2 S^2 \frac{\partial^2 f}{\partial S^2} + rS \frac{\partial f}{\partial S} - rf = 0
+\end{equation}
+
+We identify:
+\begin{itemize}
+    \item $x = S$ (stock price)
+    \item $a(S) = \sigma S$ (diffusion coefficient)
+    \item $b(S) = rS$ (drift coefficient)
+    \item Discount rate = $r$
+    \item Terminal condition: $g(S) = \Phi(S)$
+\end{itemize}
+
+\subsection{The Risk-Neutral Process}
+
+The corresponding stochastic process is:
+\begin{keybox}[Risk-Neutral Stock Price Process]
+\begin{equation}
+dS_s = rS_s \, ds + \sigma S_s \, dW_s
+\end{equation}
+\end{keybox}
+
+This represents the stock price evolution under the risk-neutral measure, where the drift is the risk-free rate $r$ (not the actual expected return $\mu$).
+
+\subsection{The Solution Formula}
+
+By Feynman-Kac, the option price is:
+\begin{keybox}[Black-Scholes Solution]
+\begin{equation}
+f(t,S) = \mathbb{E}^{\mathbb{Q}}\left[e^{-r(T-t)}\Phi(S_T) \mid S_t = S\right]
+\end{equation}
+where $\mathbb{Q}$ is the risk-neutral measure.
+\end{keybox}
+
+\section{Solving for Geometric Brownian Motion}
+
+\subsection{Using Itô's Formula on $\ln(S)$}
+
+Let $Y_s = \ln(S_s)$. Applying Itô's formula with $f(S) = \ln(S)$:
+\begin{align}
+\frac{\partial f}{\partial S} &= \frac{1}{S}\\
+\frac{\partial^2 f}{\partial S^2} &= -\frac{1}{S^2}
+\end{align}
+
+\begin{align}
+d(\ln S_s) &= \frac{1}{S_s}dS_s + \frac{1}{2}\left(-\frac{1}{S_s^2}\right)(dS_s)^2\\
+&= \frac{1}{S_s}(rS_s \, ds + \sigma S_s \, dW_s) - \frac{1}{2S_s^2}\sigma^2 S_s^2 \, ds\\
+&= r \, ds + \sigma \, dW_s - \frac{1}{2}\sigma^2 \, ds\\
+&= \left(r - \frac{1}{2}\sigma^2\right)ds + \sigma \, dW_s
+\end{align}
+
+\subsection{The Explicit Solution}
+
+Integrating from $t$ to $T$:
+\begin{equation}
+\ln(S_T) - \ln(S_t) = \left(r - \frac{1}{2}\sigma^2\right)(T-t) + \sigma(W_T - W_t)
+\end{equation}
+
+Since $W_T - W_t \sim N(0, T-t)$, we can write $W_T - W_t = \sqrt{T-t} \cdot Z$ where $Z \sim N(0,1)$:
+
+\begin{keybox}[Stock Price at Maturity]
+\begin{equation}
+S_T = S_t \exp\left[\left(r - \frac{1}{2}\sigma^2\right)(T-t) + \sigma\sqrt{T-t} \cdot Z\right]
+\end{equation}
+where $Z \sim N(0,1)$.
+\end{keybox}
+
+\section{The European Call Option}
+
+\subsection{Setting up the Expectation}
+
+For a European call option with strike $K$, the payoff is $\Phi(S_T) = \max(S_T - K, 0)$.
+
+The option value is:
+\begin{equation}
+C(t,S_t) = e^{-r(T-t)}\mathbb{E}^{\mathbb{Q}}[\max(S_T - K, 0)]
+\end{equation}
+
+\subsection{Splitting the Expectation}
+
+Using the indicator function representation:
+\begin{align}
+\max(S_T - K, 0) &= (S_T - K) \cdot \mathbf{1}_{S_T > K}\\
+\mathbb{E}[\max(S_T - K, 0)] &= \mathbb{E}[S_T \cdot \mathbf{1}_{S_T > K}] - K \cdot \mathbb{E}[\mathbf{1}_{S_T > K}]
+\end{align}
+
+We need to evaluate:
+\begin{enumerate}
+    \item $\mathbb{E}[\mathbf{1}_{S_T > K}] = \mathbb{P}(S_T > K)$ — probability of exercise
+    \item $\mathbb{E}[S_T \cdot \mathbf{1}_{S_T > K}]$ — expected stock value if exercised
+\end{enumerate}
+
+\subsection{Finding the Critical Values}
+
+The condition $S_T > K$ is equivalent to:
+\begin{align}
+S_t \exp\left[\left(r - \frac{1}{2}\sigma^2\right)(T-t) + \sigma\sqrt{T-t} \cdot Z\right] &> K\\
+\left(r - \frac{1}{2}\sigma^2\right)(T-t) + \sigma\sqrt{T-t} \cdot Z &> \ln\left(\frac{K}{S_t}\right)\\
+Z &> \frac{\ln(K/S_t) - (r - \frac{1}{2}\sigma^2)(T-t)}{\sigma\sqrt{T-t}}
+\end{align}
+
+\begin{keybox}[Critical Values]
+Define:
+\begin{align}
+d_2 &= \frac{\ln(S_t/K) + (r - \frac{1}{2}\sigma^2)(T-t)}{\sigma\sqrt{T-t}}\\
+d_1 &= d_2 + \sigma\sqrt{T-t} = \frac{\ln(S_t/K) + (r + \frac{1}{2}\sigma^2)(T-t)}{\sigma\sqrt{T-t}}
+\end{align}
+\end{keybox}
+
+Then $S_T > K$ when $Z > -d_2$, or equivalently, $Z < d_2$.
+
+\subsection{Evaluating the Integrals}
+
+\textbf{First integral:}
+\begin{equation}
+\mathbb{E}[\mathbf{1}_{S_T > K}] = \mathbb{P}(Z > -d_2) = \mathbb{P}(Z < d_2) = N(d_2)
+\end{equation}
+
+\textbf{Second integral:} Using a measure change technique (completing the square), we get:
+\begin{equation}
+\mathbb{E}[S_T \cdot \mathbf{1}_{S_T > K}] = S_t e^{r(T-t)} N(d_1)
+\end{equation}
+
+\subsection{The Final Formula}
+
+Combining everything:
+\begin{align}
+C(t,S_t) &= e^{-r(T-t)}[S_t e^{r(T-t)} N(d_1) - K N(d_2)]\\
+&= S_t N(d_1) - Ke^{-r(T-t)} N(d_2)
+\end{align}
+
+\begin{keybox}[Black-Scholes Formula for European Call]
+\begin{equation}
+\boxed{C(t,S) = S N(d_1) - Ke^{-r(T-t)} N(d_2)}
+\end{equation}
+where:
+\begin{align}
+d_1 &= \frac{\ln(S/K) + (r + \frac{1}{2}\sigma^2)(T-t)}{\sigma\sqrt{T-t}}\\
+d_2 &= \frac{\ln(S/K) + (r - \frac{1}{2}\sigma^2)(T-t)}{\sigma\sqrt{T-t}} = d_1 - \sigma\sqrt{T-t}
+\end{align}
+and $N(\cdot)$ is the cumulative standard normal distribution function.
+\end{keybox}
+
+\section{Economic Interpretation}
+
+\begin{examplebox}[Understanding the Terms]
+\begin{itemize}
+    \item \textbf{$S N(d_1)$}: Expected stock value if the option is exercised, weighted by the hedge ratio
+    \item \textbf{$Ke^{-r(T-t)} N(d_2)$}: Present value of the strike price, weighted by the risk-neutral probability of exercise
+    \item \textbf{$N(d_2)$}: Risk-neutral probability that $S_T > K$ (option finishes in-the-money)
+    \item \textbf{$N(d_1)$}: The option's delta ($\partial C/\partial S$), representing the hedge ratio
+\end{itemize}
+\end{examplebox}
+
+\section{Conclusion}
+
+The Feynman-Kac theorem provides an elegant bridge between the world of partial differential equations and stochastic processes. By transforming the Black-Scholes PDE into a probabilistic expectation, we can derive the famous Black-Scholes formula through careful application of stochastic calculus and measure theory.
+
+This approach not only yields the formula but also provides deep economic insights into option pricing, revealing the option price as an expected discounted payoff under the risk-neutral measure.
+
+\end{document}
